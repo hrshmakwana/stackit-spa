@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>StackIt – Question Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-100 text-gray-900 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <!-- Question Area -->
+    <div id="questionBox"></div>
+    <hr class="my-4">
+
+    <!-- Answer List -->
+    <h3 class="text-xl font-semibold mb-2">Answers</h3>
+    <div id="answersList" class="space-y-4"></div>
+
+    <!-- Add Answer Form -->
+    <form id="answerForm" class="mt-6 space-y-2">
+      <textarea required placeholder="Write your answer…" id="answerBody"
+        class="w-full p-2 border rounded"></textarea>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded">Submit Answer</button>
+    </form>
+
+    <div class="mt-6">
+      <a href="questions.html" class="text-blue-500 hover:underline">← Back to Questions</a>
+    </div>
+  </div>
+
+<script>
+/* -------- helper utilities -------- */
+const $$ = sel => document.querySelector(sel);
+function saveAll(questions){ localStorage.setItem('questions', JSON.stringify(questions)); }
+function getAll (){ return JSON.parse(localStorage.getItem('questions')||'[]'); }
+function uuid (){ return crypto.randomUUID(); }
+
+/* -------- load the requested question -------- */
+const qId = new URLSearchParams(location.search).get('id');  // ?id=xxxxx
+const questions = getAll();
+const qIndex = questions.findIndex(q => q.id === qId);
+if (qIndex === -1) { alert('Question not found'); location.href='questions.html'; }
+
+const q = questions[qIndex];
+q.answers ??= [];                 // ensure array
+
+/* -------- render question -------- */
+function renderQuestion(){
+  $$('#questionBox').innerHTML = `
+    <h1 class="text-2xl font-bold mb-2">${q.title}</h1>
+    <p class="mb-2">${q.desc}</p>
+    <p class="text-xs text-gray-600">Tags: ${q.tags}</p>
+  `;
+}
+
+/* -------- render answers -------- */
+function renderAnswers(){
+  const wrap = $$('#answersList');
+  wrap.innerHTML = '';
+  if (q.answers.length === 0){
+    wrap.innerHTML = `<p class="text-gray-500">No answers yet – be first!</p>`;
+    return;
+  }
+  q.answers.forEach((a, idx) => {
+    const div = document.createElement('div');
+    div.className = 'p-4 bg-gray-50 border rounded';
+    div.innerHTML = `
+      <p>${a.body}</p>
+      <p class="mt-2">👍 <span id="v${a.id}">${a.votes}</span></p>
+      <button onclick="vote('${a.id}',1)"  class="text-green-600 mr-2">Upvote</button>
+      <button onclick="vote('${a.id}',-1)" class="text-red-600">Downvote</button>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+/* -------- voting -------- */
+function vote(aid, delta){
+  const ans = q.answers.find(x=>x.id===aid);
+  const key = `v_${aid}`;
+  const prev = parseInt(localStorage.getItem(key)||0);
+  if (prev === delta) return;          // same vote; ignore
+  ans.votes += delta - prev;
+  localStorage.setItem(key, delta);
+  saveAll(questions);
+  renderAnswers();
+}
+window.vote = vote;                   // expose to inline onclick
+
+/* -------- add answer -------- */
+$('#answerForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  q.answers.push({ id: uuid(), body: answerBody.value.trim(), votes: 0 });
+  answerBody.value='';
+  saveAll(questions);
+  renderAnswers();
+});
+
+/* -------- initial paint -------- */
+renderQuestion();
+renderAnswers();
+</script>
+</body>
+</html>

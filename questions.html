@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>StackIt – All Questions</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-100 text-gray-800 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">📚 All Questions</h1>
+
+    <!-- QUESTIONS LIST -->
+    <div id="questionsList" class="space-y-4"></div>
+
+    <div class="mt-6">
+      <a href="index.html" class="text-blue-500 hover:underline">← Back to Ask Page</a>
+    </div>
+  </div>
+
+<script>
+  const questionsList = document.getElementById('questionsList');
+  const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+
+  if (questions.length === 0) {
+    questionsList.innerHTML =
+      `<p class="text-gray-500">No questions asked yet. Be the first!</p>`;
+  } else {
+    questions.forEach(q => {
+      /* Build the wrapper anchor */
+      const link = document.createElement('a');
+      link.href = `details.html?id=${q.id}`;
+      link.className = 'block hover:bg-gray-100 rounded';
+
+      /* Build the card */
+      const card = document.createElement('div');
+      card.className = 'p-4 border border-gray-200 rounded bg-gray-50';
+      card.innerHTML = `
+        <h2 class="text-lg font-semibold">${q.title}</h2>
+        <p class="text-sm mb-1 truncate">${q.desc}</p>
+        <p class="text-xs text-gray-500 mb-1">Tags: ${q.tags}</p>
+        <p class="text-sm">👍 <span>${q.votes || 0}</span></p>
+      `;
+
+      link.appendChild(card);
+      questionsList.appendChild(link);
+    });
+  }
+</script>
+</body>
+</html>

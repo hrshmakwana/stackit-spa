@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>StackIt – Ask a Question</title>
+  <!-- Tailwind CDN for quick styling -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-100 text-gray-900 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">📝 Ask a Question</h1>
+
+    <!-- Ask Question Form -->
+    <form id="askForm" class="space-y-3">
+      <input id="title" required placeholder="Title"
+             class="w-full p-2 border rounded" />
+
+      <textarea id="desc" required placeholder="Describe your problem…"
+                class="w-full p-2 border rounded h-36"></textarea>
+
+      <input id="tags" placeholder="Tags (comma separated)"
+             class="w-full p-2 border rounded" />
+
+      <button class="bg-blue-600 text-white px-4 py-2 rounded">
+        Post Question
+      </button>
+    </form>
+
+    <hr class="my-6">
+
+    <!-- Navigate to Questions List -->
+    <a href="questions.html" class="text-blue-600 hover:underline">
+      📚 View All Questions
+    </a>
+  </div>
+
+  <script>
+    /* ---------- helpers ---------- */
+    const $ = sel => document.querySelector(sel);
+    const storeKey = 'questions';
+
+    function getAll() {
+      return JSON.parse(localStorage.getItem(storeKey) || '[]');
+    }
+    function saveAll(list) {
+      localStorage.setItem(storeKey, JSON.stringify(list));
+    }
+
+    /* ---------- form handler ---------- */
+    $('#askForm').addEventListener('submit', e => {
+      e.preventDefault();
+
+      const questions = getAll();
+
+      const newQ = {
+        id: crypto.randomUUID(),            // unique ID
+        title: $('#title').value.trim(),
+        desc: $('#desc').value.trim(),
+        tags: $('#tags').value.trim(),
+        votes: 0,
+        answers: []                         // ready for details page
+      };
+
+      questions.push(newQ);
+      saveAll(questions);
+
+      // clear form (optional)
+      e.target.reset();
+
+      // go to list page
+      location.href = 'questions.html';
+    });
+  </script>
+</body>
+</html>
